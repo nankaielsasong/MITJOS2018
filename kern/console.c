@@ -5,6 +5,7 @@
 #include <inc/kbdreg.h>
 #include <inc/string.h>
 #include <inc/assert.h>
+#include <inc/textcolor.h>
 
 #include <kern/console.h>
 
@@ -163,8 +164,10 @@ static void
 cga_putc(int c)
 {
 	// if no attribute given, then use black on white
-	if (!(c & ~0xFF))
-		c |= 0x0700;
+	c |= textcolor;
+
+//	if (!(c & ~0xFF))
+//		c |= 0x0700;
 
 	switch (c & 0xff) {
 	case '\b':
@@ -316,14 +319,10 @@ static int
 kbd_proc_data(void)
 {
 	int c;
-	uint8_t stat, data;
+	uint8_t data;
 	static uint32_t shift;
 
-	stat = inb(KBSTATP);
-	if ((stat & KBS_DIB) == 0)
-		return -1;
-	// Ignore data from mouse.
-	if (stat & KBS_TERR)
+	if ((inb(KBSTATP) & KBS_DIB) == 0)
 		return -1;
 
 	data = inb(KBDATAP);

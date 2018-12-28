@@ -8,6 +8,7 @@
 #include <inc/stdarg.h>
 #include <inc/error.h>
 
+#include <inc/textcolor.h>
 /*
  * Space or zero padding and a field width are supported for the numeric
  * formats only.
@@ -87,11 +88,16 @@ vprintfmt(void (*putch)(int, void*), void *putdat, const char *fmt, va_list ap)
 	unsigned long long num;
 	int base, lflag, width, precision, altflag;
 	char padc;
+	
+	//textcolor = 0x0700;		//black on write
 
 	while (1) {
 		while ((ch = *(unsigned char *) fmt++) != '%') {
 			if (ch == '\0')
+			{
+				textcolor = 0x0700;
 				return;
+			}
 			putch(ch, putdat);
 		}
 
@@ -155,6 +161,12 @@ vprintfmt(void (*putch)(int, void*), void *putdat, const char *fmt, va_list ap)
 			lflag++;
 			goto reswitch;
 
+		// text color
+		case 'm':
+			num = getint(&ap, lflag);
+			textcolor = num;
+			break;
+
 		// character
 		case 'c':
 			putch(va_arg(ap, int), putdat);
@@ -206,14 +218,9 @@ vprintfmt(void (*putch)(int, void*), void *putdat, const char *fmt, va_list ap)
 		// (unsigned) octal
 		case 'o':
 			// Replace this with your code.
-			
-			// putch('X', putdat);
-			// putch('X', putdat);
-			// putch('X', putdat);
-			num = (unsigned long long)(uintptr_t) va_arg(ap, void*);
+			num = getuint(&ap, lflag);
 			base = 8;
 			goto number;
-			break;
 
 		// pointer
 		case 'p':
